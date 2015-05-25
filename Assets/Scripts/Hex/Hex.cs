@@ -2,46 +2,70 @@
 using System.Collections;
 using System;
 
-public struct Hex
+public abstract class Hex
 {
-    private int[] v;
+    //protected int q;
+    //protected int r;
+    //protected int s;
 
-    public Hex(int q, int r)
-    {
-        v = new int[3];
+    private int[] cube;
+    private int[] axial;
 
-        v[0] = q;
-        v[1] = r;
-        v[2] = -q - r;
+    // axial ctor
+    //public Hex(int q, int r) 
+    //{
+    //    cube = new int[3];
+    //    axial = new int[2];
 
-        if (Q() + R() + S() != 0)
-            throw new Exception();
-    }
+    //    cube[0] = q;
+    //    cube[1] = r;
+    //    cube[2] = -q - r;
+    //    axial[0] = q;
+    //    axial[1] = r;
 
-    public Hex(int q, int r, int s)
-    {
-        v = new int[3];
+    //    if (Q() + R() + S() != 0)
+    //        throw new Exception();
+    //}
 
-        v[0] = q;
-        v[1] = r;
-        v[2] = s;
+    // cube ctor
+    //public Hex(int q, int r, int s)
+    //{
+    //    cube = new int[3];
+    //    axial = new int[2];
 
-        if (Q() + R() + S() != 0)
-            throw new Exception();
-    }
+    //    cube[0] = q;
+    //    cube[1] = r;
+    //    cube[2] = s;
+    //    axial[0] = q;
+    //    axial[1] = r;
 
-    public int Q()
-    {
-        return v[0];
-    }
+    //    if (Q() + R() + S() != 0)
+    //        throw new Exception();
+    //}
 
-    public int R()
-    {
-        return v[1];
-    }
+    public abstract int Q(); //x
+    public abstract int R(); //y
+    public abstract int S(); //z
 
-    public int S()
-    {
-        return v[2];
-    }
+    //public override int GetHashCode()
+    //{
+    //    return (R().ToString() + Q().ToString() + S().ToString()).GetHashCode();
+    //}
+
+    //public Vector2 GetAxialCoord()
+    //{
+    //    Vector2 coord = new Vector2();
+    //    coord.x = cube[0];
+    //    coord.y = cube[2];
+    //    return coord;
+    //}
+
+    //public Vector3 GetCubeCoord()
+    //{
+    //    Vector3 coord = new Vector3();
+    //    coord.x = axial[0];
+    //    coord.z = axial[1];
+    //    coord.y = -coord.x - coord.z;
+    //    return coord;
+    //}
 }

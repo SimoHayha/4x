@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class HexMesh : MonoBehaviour
 {
@@ -9,7 +10,9 @@ public class HexMesh : MonoBehaviour
 
     public void Create(Layout layout)
     {
-        poly = HexUtils.PolygonCorner(layout, new Hex(0, 0)).ToArray();
+        List<Vector3> list = HexUtils.PolygonCorner(layout, new AxialHex(0, 0, 0));
+        list.Reverse();
+        poly = list.ToArray();
 
         MeshFilter mf = gameObject.AddComponent<MeshFilter>();
         Mesh mesh = new Mesh();

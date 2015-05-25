@@ -22,16 +22,46 @@ public class HexGrid : MonoBehaviour
     List<GameHex> grid;
     GameObject hexMeshModel;
 
+    //Hex[,] hexes;
+    Hashtable hexes;
+
     public class GameHex : MonoBehaviour
     {
-        public Hex hex;
+        public AxialHex hex;
         public GameObject mesh;
         public VectorLine line;
         public Collider2D collider;
+
+        private TextMesh textMesh;
+
+        void Start()
+        {
+            GameObject text = new GameObject("pos");
+            text.transform.parent = transform;
+            text.transform.localPosition = Vector3.zero;
+            text.transform.localRotation = Quaternion.identity;
+            textMesh = text.AddComponent<TextMesh>();
+            Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            textMesh.font = arial;
+            textMesh.renderer.material = arial.material;
+            textMesh.anchor = TextAnchor.MiddleCenter;
+            textMesh.characterSize = 0.25f;
+            textMesh.text = hex.Q() + " " + hex.R();
+
+            //Vector3 cubeCoord = HexUtils.AxialToCube(hex);
+            //textMesh.text = cubeCoord.y + " " + cubeCoord.x + " " + cubeCoord.z;
+
+            //Vector2 axialCoord = HexUtils.CubeToHex();
+            //textMesh.text = axialCoord[0] + " " + axialCoord[1];
+            //Vector3 cubeCoord = HexUtils.GetCubeCoord();
+            //textMesh.text = cubeCoord[0] + " " + cubeCoord[1] + " " + cubeCoord[2];
+        }
     }
 
     void Start()
     {
+        hexes = new Hashtable();
+
         map = new List<Hex>();
         grid = new List<GameHex>();
 
@@ -40,7 +70,7 @@ public class HexGrid : MonoBehaviour
             int r1 = Mathf.Max(-MapRadius, -q - MapRadius);
             int r2 = Mathf.Min(MapRadius, -q + MapRadius);
             for (int r = r1; r <= r2; ++r)
-                map.Add(new Hex(q, r, -q - r));
+                map.Add(new AxialHex(q, r, -q - r));
         }
 
         VectorLine.SetCanvasCamera(CameraToUse);
@@ -71,24 +101,26 @@ public class HexGrid : MonoBehaviour
             GameObject hexMesh = Instantiate(hexMeshModel/*, center, Quaternion.identity*/) as GameObject;
 
             GameHex gh = /*new GameHex(h, line);*/ hexMesh.AddComponent<GameHex>();
-            gh.hex = h;
+            gh.hex = h as AxialHex;
             gh.line = line;
             gh.mesh = hexMesh;
 
-            hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+            hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
             hexMesh.transform.position = center;
             hexMesh.transform.parent = GridTransform;
             hexMesh.renderer.material = LineMaterial;
-            hexMesh.name = "hexagon(" + gh.hex.Q() + "," + gh.hex.R() + "," + gh.hex.S() + ")";
+            hexMesh.name = "hexagon(" + gh.hex.R() + "," + gh.hex.Q() + ")";
 
             CreateCollider(layout, gh, hexMesh);
 
+            hexes.Add(h.GetHashCode(), gh);
 
             grid.Add(gh);
         }
 
-        //CreateCollider(layout);
         CreateSelectPolygon(layout);
+
+        GridTransform.localEulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
     }
 
     void CreateCollider(Layout layout, GameHex gh, GameObject obj)
@@ -96,8 +128,6 @@ public class HexGrid : MonoBehaviour
         List<Vector2> points = HexUtils.PolygonCorner2d(layout, gh.hex);
         for (int i = 0; i < points.Count; ++i)
             points[i] -= new Vector2(obj.transform.position.x, obj.transform.position.y);
-        //gh.transform.parent = transform;
-        //gh.transform.position = Vector3.zero;
         PolygonCollider2D polygonCollider = obj.AddComponent<PolygonCollider2D>();
         polygonCollider.points = points.ToArray();
     }
@@ -122,7 +152,7 @@ public class HexGrid : MonoBehaviour
     void CreateSelectPolygon(Layout layout)
     {
         selectedObject = new GameObject("SelectedObject");
-        List<Vector3> points = HexUtils.PolygonCorner(layout, new Hex(0, 0));
+        List<Vector3> points = HexUtils.PolygonCorner(layout, new AxialHex(0, 0, 0));
         points.Add(points[0]);
         selectedPolygon = new VectorLine("SelectPolygon", points, SelectedHex, 1.0f, LineType.Continuous, Joins.Weld);
         selectedPolygon.drawTransform = selectedObject.transform;
@@ -148,27 +178,12 @@ public class HexGrid : MonoBehaviour
 
     void Update()
     {
-        //if (GridTransform.hasChanged)
-        //{
-        //    foreach (VectorLine line in lines)
-        //        line.Draw();
-        //}
-
         selectedPolygon.Draw();
         foreach (VectorLine line in lines)
             line.Draw();
 
         if (Input.GetMouseButtonDown(0))
         {
-            //Vector3 p = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //p.z = 0.0f;
-            //Debug.Log(p);
-            //Debug.DrawLine(Camera.main.transform.position, p, Color.green, 5.0f);
-            //Vector3 mousePos = Input.mousePosition;
-            //mousePos.z = 0.0f;
-            //Vector3 p = Camera.main.ScreenToWorldPoint(mousePos);
-            //p.z = 0.0f;
-            //Debug.DrawLine(Camera.main.transform.position, p, Color.green, 5.0f);
             Vector3 mousePos = Input.mousePosition;
             mousePos.z = 10.0f;
             Debug.Log(mousePos);
@@ -177,17 +192,49 @@ public class HexGrid : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
             if (hit.collider != null)
             {
-                Debug.Log(hit.collider.name);
                 GameHex gh = hit.transform.GetComponent<GameHex>();
                 if (gh != null)
                 {
-                    //Debug.Log("hello");
-                    selectedObject.transform.position = HexUtils.HexToPixel(layout, gh.hex);
+                    AxialHex center = new AxialHex(0, 0);
+                    int range = HexUtils.AxialDistance(center, gh.hex);
 
-                    HighlightNeighbor(gh);
+                    float t1 = Time.realtimeSinceStartup;
+                    List<CubeHex> inRange = Range(center, range);
+                    Debug.Log(inRange.Count + "/" + hexes.Count);
+                    float t2 = Time.realtimeSinceStartup;
+                    float elapsed = t2 - t1;
+                    Debug.Log(elapsed);
+
+                    //for (int i = 0; i < 6; ++i)
+                    //{
+
+                        //AxialHex neighbor = HexUtils.HexNeighbor(gh.hex, i);
+                        //GameHex gNeighbor = hexes[neighbor.GetHashCode()] as GameHex;
+
+                        //Debug.Log(gNeighbor);
+                    //}
                 }
             }
         }
+    }
+
+    List<CubeHex> Range(AxialHex center, int N)
+    {
+        List<CubeHex> results = new List<CubeHex>();
+
+        int dx;
+        int dy;
+        int dz;
+        for (dx = -N; dx <= N; ++dx)
+        {
+            for (dy = Mathf.Max(-N, -dx - N); dy <= Mathf.Min(N, -dx + N); ++dy)
+            {
+                dz = -dx - dy;
+                results.Add(new CubeHex(dx, dy, dz));
+            }
+        }
+
+        return results;
     }
 
     void HighlightNeighbor(GameHex center)

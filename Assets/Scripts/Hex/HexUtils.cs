@@ -4,6 +4,20 @@ using System.Collections.Generic;
 
 public static class HexUtils
 {
+    private static AxialHex[] directions = { new AxialHex(1, 0), new AxialHex(1, -1), new AxialHex(0, -1),
+                                            new AxialHex(-1, 0), new AxialHex(-1, 1), new AxialHex(0, 1) };
+
+    public static AxialHex HexDirection(int direction)
+    {
+        return directions[direction];
+    }
+
+    public static AxialHex HexNeighbor(AxialHex hex, int direction)
+    {
+        AxialHex dir = HexDirection(direction);
+        return new AxialHex(hex.Q() + dir.Q(), hex.R() + dir.R());
+    }
+
     public static Vector3 HexToPixel(Layout layout, Hex h)
     {
         Orientation M = layout.orientation;
@@ -41,5 +55,34 @@ public static class HexUtils
             corners.Add(new Vector3(center.x + offset.x, center.y + offset.y));
         }
         return corners;
+    }
+
+    public static Vector2 CubeToAxial(CubeHex h)
+    {
+        Vector2 v = new Vector2();
+        v.x = h.Q();
+        v.y = h.S();
+        return v;
+    }
+
+    public static Vector3 AxialToCube(AxialHex h)
+    {
+        Vector3 v = new Vector3();
+        v.x = h.Q();
+        v.z = h.R();
+        v.y = -v.x - v.z;
+        return v;
+    }
+
+    public static int CubeDistance(CubeHex a, CubeHex b)
+    {
+        return Mathf.Max(Mathf.Abs(a.Q() - b.Q()), Mathf.Abs(a.R() - b.R()), Mathf.Abs(a.S() - b.S()));
+    }
+
+    public static int AxialDistance(AxialHex a, AxialHex b)
+    {
+        Vector3 va = AxialToCube(a);
+        Vector3 vb = AxialToCube(b);
+        return CubeDistance(new CubeHex((int)va.x, (int)va.y, (int)va.z), new CubeHex((int)vb.x, (int)vb.y, (int)vb.z));
     }
 }
