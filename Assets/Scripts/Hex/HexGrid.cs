@@ -20,10 +20,12 @@ public class HexGrid : MonoBehaviour
     List<Hex> map;
     List<VectorLine> lines;
     List<GameHex> grid;
+    GameObject hexMeshModel;
 
     public class GameHex : MonoBehaviour
     {
         public Hex hex;
+        public GameObject mesh;
         public VectorLine line;
         public Collider2D collider;
     }
@@ -45,12 +47,16 @@ public class HexGrid : MonoBehaviour
         VectorLine.canvas.planeDistance = 10;
 
         Orientation orientation = Orientation.LayoutPointy();
+        //Orientation orientation = Orientation.LayoutFlat();
         layout = new Layout(orientation, new Vector3(0.5f, 0.5f, 0.0f), Origin);
         lines = new List<VectorLine>();
+
+        CreateMesh();
 
         foreach (Hex h in map)
         {
             List<Vector3> points = HexUtils.PolygonCorner(layout, h);
+            Vector3 center = FindCenter(points);
             points.Add(points[0]);
             VectorLine line = new VectorLine("Line", points, LineMaterial, 1.0f, LineType.Continuous, Joins.Weld);
             line.drawTransform = GridTransform;
@@ -59,15 +65,58 @@ public class HexGrid : MonoBehaviour
 
             lines.Add(line);
 
-            GameObject gameObject = new GameObject("case");
-            GameHex gh = /*new GameHex(h, line);*/ gameObject.AddComponent<GameHex>();
+            //GameObject gameObject = new GameObject("case");
+
+            //Debug.Log(center);
+            GameObject hexMesh = Instantiate(hexMeshModel/*, center, Quaternion.identity*/) as GameObject;
+
+            GameHex gh = /*new GameHex(h, line);*/ hexMesh.AddComponent<GameHex>();
             gh.hex = h;
             gh.line = line;
+            gh.mesh = hexMesh;
+
+            hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 0.0f);
+            hexMesh.transform.position = center;
+            hexMesh.transform.parent = GridTransform;
+            hexMesh.renderer.material = LineMaterial;
+            hexMesh.name = "hexagon(" + gh.hex.Q() + "," + gh.hex.R() + "," + gh.hex.S() + ")";
+
+            CreateCollider(layout, gh, hexMesh);
+
+
             grid.Add(gh);
         }
 
-        CreateCollider(layout);
+        //CreateCollider(layout);
         CreateSelectPolygon(layout);
+    }
+
+    void CreateCollider(Layout layout, GameHex gh, GameObject obj)
+    {
+        List<Vector2> points = HexUtils.PolygonCorner2d(layout, gh.hex);
+        for (int i = 0; i < points.Count; ++i)
+            points[i] -= new Vector2(obj.transform.position.x, obj.transform.position.y);
+        //gh.transform.parent = transform;
+        //gh.transform.position = Vector3.zero;
+        PolygonCollider2D polygonCollider = obj.AddComponent<PolygonCollider2D>();
+        polygonCollider.points = points.ToArray();
+    }
+
+    Vector3 FindCenter(List<Vector3> points)
+    {
+        Vector3 center = Vector3.zero;
+        foreach (Vector3 v3 in points)
+        {
+            center += v3;
+        }
+        return center / points.Count;
+    }
+
+    void CreateMesh()
+    {
+        hexMeshModel = new GameObject("Mesh");
+        HexMesh hexMesh = hexMeshModel.AddComponent<HexMesh>();
+        hexMesh.Create(layout);
     }
 
     void CreateSelectPolygon(Layout layout)
@@ -128,7 +177,7 @@ public class HexGrid : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
             if (hit.collider != null)
             {
-                //Debug.Log(hit.collider.name);
+                Debug.Log(hit.collider.name);
                 GameHex gh = hit.transform.GetComponent<GameHex>();
                 if (gh != null)
                 {
