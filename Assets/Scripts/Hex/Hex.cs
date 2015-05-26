@@ -4,8 +4,10 @@ using System;
 
 public abstract class Hex
 {
-    private int[] cube;
-    private int[] axial;
+    //[SerializeField]
+    //private int[] cube;
+    //[SerializeField]
+    //private int[] axial;
 
     public abstract int Q(); //x
     public abstract int R(); //y
@@ -13,6 +15,6 @@ public abstract class Hex
 
     public override int GetHashCode()
     {
-        return (S().ToString() + R().ToString() + Q().ToString()).GetHashCode();
+        return Q() & (int)0xFFFF | R() << 16;
     }
 }

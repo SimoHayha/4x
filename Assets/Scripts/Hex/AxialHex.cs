@@ -1,9 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
 public class AxialHex : Hex
 {
+    [SerializeField]
     private int q;
+    [SerializeField]
     private int r;
 
     public AxialHex(int q_, int r_) : base()
@@ -36,5 +39,10 @@ public class AxialHex : Hex
     public override int GetHashCode()
     {
         return base.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return "a(" + q + "," + r + ")";
     }
 }

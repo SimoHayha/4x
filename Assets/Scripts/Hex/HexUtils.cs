@@ -7,6 +7,27 @@ public static class HexUtils
     private static AxialHex[] directions = { new AxialHex(1, 0), new AxialHex(1, -1), new AxialHex(0, -1),
                                             new AxialHex(-1, 0), new AxialHex(-1, 1), new AxialHex(0, 1) };
 
+    public static CubeHex CubeAdd(CubeHex a, CubeHex b)
+    {
+        Debug.Log(a + " " + b);
+        return new CubeHex(a.Q() + b.Q(), a.R() + b.R(), a.S() + b.S());
+    }
+
+    public static AxialHex AxialAdd(AxialHex a, AxialHex b)
+    {
+        return new AxialHex(a.Q() + b.Q(), a.R() + b.R());
+    }
+
+    public static CubeHex CubeSub(CubeHex a, CubeHex b)
+    {
+        return new CubeHex(a.Q() - b.Q(), a.R() - b.R(), a.S() - b.S());
+    }
+
+    public static AxialHex AxialSub(AxialHex a, AxialHex b)
+    {
+        return new AxialHex(a.Q() - b.Q(), a.R() - b.R());
+    }
+
     public static AxialHex HexDirection(int direction)
     {
         return directions[direction];
@@ -72,6 +93,25 @@ public static class HexUtils
         v.z = h.R();
         v.y = -v.x - v.z;
         return v;
+    }
+
+    public static AxialHex CubeToAxialDirect(CubeHex h)
+    {
+        Vector2 v = new Vector2();
+        v.x = h.Q();
+        v.y = h.S();
+        return new AxialHex((int)v.x, (int)v.y);
+    }
+
+    public static CubeHex AxialToCubeDirect(AxialHex h)
+    {
+        Vector3 v = new Vector3();
+
+        //v.x = -v.y - v.z;
+        v.x = h.Q();
+        v.z = h.R();
+        v.y = -v.x - v.z;
+        return new CubeHex((int)v.y, (int)v.x, (int)v.z);
     }
 
     public static int CubeDistance(CubeHex a, CubeHex b)

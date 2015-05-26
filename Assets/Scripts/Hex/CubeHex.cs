@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
 public class CubeHex : Hex
 {
+    [SerializeField]
     private int q;
+    [SerializeField]
     private int r;
+    [SerializeField]
     private int s;
 
     public CubeHex(int q_, int r_, int s_) : base()
@@ -42,5 +46,10 @@ public class CubeHex : Hex
     public override int GetHashCode()
     {
         return base.GetHashCode();
+    }
+
+    public override string ToString()
+    {
+        return "c(" + q + "," + r + "," + s + ")";
     }
 }

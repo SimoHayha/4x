@@ -7,6 +7,7 @@ public class HexGrid : MonoBehaviour
 {
     public Camera CameraToUse;
     public Material LineMaterial;
+    public Material HexMaterial;
     public Material SelectedHex;
     public int MapRadius = 10;
     public Vector3 Origin;
@@ -47,20 +48,21 @@ public class HexGrid : MonoBehaviour
             Hash = hex.GetHashCode();
 
             SetupBox();
-            //GameObject text = new GameObject("pos");
-            //text.transform.parent = transform;
-            //text.transform.localPosition = Vector3.zero;
-            //text.transform.localRotation = Quaternion.identity;
-            //textMesh = text.AddComponent<TextMesh>();
-            //Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            //textMesh.font = arial;
-            //textMesh.renderer.material = arial.material;
-            //textMesh.anchor = TextAnchor.MiddleCenter;
-            //textMesh.characterSize = 0.25f;
-            //textMesh.text = hex.Q() + " " + hex.R();
+            GameObject text = new GameObject("pos");
+            text.transform.parent = transform;
+            text.transform.localPosition = Vector3.zero;
+            text.transform.localRotation = Quaternion.identity;
+            textMesh = text.AddComponent<TextMesh>();
+            Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            textMesh.font = arial;
+            textMesh.renderer.material = arial.material;
+            textMesh.anchor = TextAnchor.MiddleCenter;
+            textMesh.characterSize = 0.25f;
+            textMesh.text = hex.Q() + " " + hex.R();
 
             //Vector3 cubeCoord = HexUtils.AxialToCube(hex);
-            //textMesh.text = cubeCoord.y + " " + cubeCoord.x + " " + cubeCoord.z;
+            CubeHex cubeHex = HexUtils.AxialToCubeDirect(hex);
+            textMesh.text = cubeHex.Q() + " " + cubeHex.R() + " " + cubeHex.S();
 
             //Vector2 axialCoord = HexUtils.CubeToHex();
             //textMesh.text = axialCoord[0] + " " + axialCoord[1];
@@ -93,6 +95,12 @@ public class HexGrid : MonoBehaviour
                     GameObject blackHoleModel = Resources.Load<GameObject>("Box/Anomaly");
                     boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
                 }
+            }
+
+            if (boxMesh != null)
+            {
+                boxMesh.transform.parent = transform;
+                boxMesh.transform.localPosition = Vector3.zero;
             }
         }
     }
@@ -149,8 +157,8 @@ public class HexGrid : MonoBehaviour
             hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
             hexMesh.transform.position = center;
             hexMesh.transform.parent = GridTransform;
-            hexMesh.renderer.material = LineMaterial;
-            hexMesh.name = "hexagon(" + gh.hex.R() + "," + gh.hex.Q() + ")";
+            hexMesh.renderer.material = HexMaterial;
+            hexMesh.name = "hexagon(" + gh.hex.Q() + "," + gh.hex.R() + ")";
 
             CreateCollider(layout, gh, hexMesh);
 
@@ -238,20 +246,19 @@ public class HexGrid : MonoBehaviour
         if (over != null)
             over.mesh.renderer.material = mouseOver;
 
-        foreach (VectorLine line in lines)
-            line.Draw();
-
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = 10.0f;
         Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
+        Vector2 camera = Camera.main.transform.position;
         RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
+        Debug.DrawLine(point, Vector2.zero - camera);
         if (hit.collider != null)
         {
             GameHex gh = hit.transform.GetComponent<GameHex>();
             if (gh != null)
             {
                 if (over != null)
-                    over.mesh.renderer.material = LineMaterial;
+                    over.mesh.renderer.material = HexMaterial;
                 over = gh;
                 over.mesh.renderer.material = mouseOver;
             }
@@ -263,13 +270,13 @@ public class HexGrid : MonoBehaviour
                     Debug.Log(hex.GetHashCode());
                     GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
                     if (ghInRange != null)
-                        ghInRange.mesh.renderer.material = LineMaterial;
+                        ghInRange.mesh.renderer.material = HexMaterial;
                 }
 
                 AxialHex center = new AxialHex(0, 0);
                 int range = HexUtils.AxialDistance(center, gh.hex);
 
-                inRange = Range(center, range);
+                inRange = Range(HexUtils.AxialToCubeDirect(gh.hex), 2);
                 Debug.Log(inRange.Count);
                 foreach (CubeHex hex in inRange)
                 {
@@ -307,7 +314,7 @@ public class HexGrid : MonoBehaviour
 
     }
 
-    List<CubeHex> Range(AxialHex center, int N)
+    List<CubeHex> Range(CubeHex center, int N)
     {
         List<CubeHex> results = new List<CubeHex>();
 
@@ -319,35 +326,35 @@ public class HexGrid : MonoBehaviour
             for (dy = Mathf.Max(-N, -dx - N); dy <= Mathf.Min(N, -dx + N); ++dy)
             {
                 dz = -dx - dy;
-                results.Add(new CubeHex(dx, dy, dz));
+                results.Add(HexUtils.CubeAdd(center, new CubeHex(dx, dy, dz)));
             }
         }
 
         return results;
     }
 
-    void HighlightNeighbor(GameHex center)
-    {
-        int distance = 2;
-        int x;
-        int y;
-        int z;
-        foreach (GameHex gh in grid)
-        {
-            x = gh.hex.Q() - center.hex.Q();
-            y = gh.hex.R() - center.hex.R();
-            z = gh.hex.S() - center.hex.S();
-            if (-distance <= x && x <= distance)
-            {
-                if (-distance <= y && y <= distance)
-                {
-                    if (-distance <= z && z <= distance)
-                    {
-                        if (x + y + z == 0)
-                            gh.line.material = SelectedHex;
-                    }
-                }
-            }
-        }
-    }
+    //void HighlightNeighbor(GameHex center)
+    //{
+    //    int distance = 2;
+    //    int x;
+    //    int y;
+    //    int z;
+    //    foreach (GameHex gh in grid)
+    //    {
+    //        x = gh.hex.Q() - center.hex.Q();
+    //        y = gh.hex.R() - center.hex.R();
+    //        z = gh.hex.S() - center.hex.S();
+    //        if (-distance <= x && x <= distance)
+    //        {
+    //            if (-distance <= y && y <= distance)
+    //            {
+    //                if (-distance <= z && z <= distance)
+    //                {
+    //                    if (x + y + z == 0)
+    //                        gh.line.material = SelectedHex;
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
 }
