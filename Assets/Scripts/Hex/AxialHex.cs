@@ -32,4 +32,9 @@ public class AxialHex : Hex
     {
         return -q - r;
     }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
 }

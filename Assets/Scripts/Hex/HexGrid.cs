@@ -25,28 +25,35 @@ public class HexGrid : MonoBehaviour
     //Hex[,] hexes;
     Hashtable hexes;
 
+    Material mouseOver;
+    GameHex over;
+
+    List<CubeHex> inRange;
+
     public class GameHex : MonoBehaviour
     {
         public AxialHex hex;
         public GameObject mesh;
         public VectorLine line;
         public Collider2D collider;
+        public int Hash;
 
         private TextMesh textMesh;
 
         void Start()
         {
-            GameObject text = new GameObject("pos");
-            text.transform.parent = transform;
-            text.transform.localPosition = Vector3.zero;
-            text.transform.localRotation = Quaternion.identity;
-            textMesh = text.AddComponent<TextMesh>();
-            Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            textMesh.font = arial;
-            textMesh.renderer.material = arial.material;
-            textMesh.anchor = TextAnchor.MiddleCenter;
-            textMesh.characterSize = 0.25f;
-            textMesh.text = hex.Q() + " " + hex.R();
+            Hash = hex.GetHashCode();
+            //GameObject text = new GameObject("pos");
+            //text.transform.parent = transform;
+            //text.transform.localPosition = Vector3.zero;
+            //text.transform.localRotation = Quaternion.identity;
+            //textMesh = text.AddComponent<TextMesh>();
+            //Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            //textMesh.font = arial;
+            //textMesh.renderer.material = arial.material;
+            //textMesh.anchor = TextAnchor.MiddleCenter;
+            //textMesh.characterSize = 0.25f;
+            //textMesh.text = hex.Q() + " " + hex.R();
 
             //Vector3 cubeCoord = HexUtils.AxialToCube(hex);
             //textMesh.text = cubeCoord.y + " " + cubeCoord.x + " " + cubeCoord.z;
@@ -60,6 +67,8 @@ public class HexGrid : MonoBehaviour
 
     void Start()
     {
+        LoadResources();
+
         hexes = new Hashtable();
 
         map = new List<Hex>();
@@ -118,9 +127,17 @@ public class HexGrid : MonoBehaviour
             grid.Add(gh);
         }
 
-        CreateSelectPolygon(layout);
+        //CreateSelectPolygon(layout);
+
+        hexMeshModel.SetActive(false);
 
         GridTransform.localEulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
+    }
+
+    private void LoadResources()
+    {
+        mouseOver = Resources.Load<Material>("Materials/MouseOver");
+        inRange = new List<CubeHex>();
     }
 
     void CreateCollider(Layout layout, GameHex gh, GameObject obj)
@@ -178,43 +195,63 @@ public class HexGrid : MonoBehaviour
 
     void Update()
     {
-        selectedPolygon.Draw();
+        if (over != null)
+            over.mesh.renderer.material = mouseOver;
+
         foreach (VectorLine line in lines)
             line.Draw();
 
-        if (Input.GetMouseButtonDown(0))
+        Vector3 mousePos = Input.mousePosition;
+        mousePos.z = 10.0f;
+        Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
+        RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
+        if (hit.collider != null)
         {
-            Vector3 mousePos = Input.mousePosition;
-            mousePos.z = 10.0f;
-            Debug.Log(mousePos);
-            Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
-            Debug.Log(point);
-            RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
-            if (hit.collider != null)
+            GameHex gh = hit.transform.GetComponent<GameHex>();
+            if (gh != null)
             {
-                GameHex gh = hit.transform.GetComponent<GameHex>();
-                if (gh != null)
+                if (over != null)
+                    over.mesh.renderer.material = LineMaterial;
+                over = gh;
+                over.mesh.renderer.material = mouseOver;
+            }
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                foreach (CubeHex hex in inRange)
                 {
-                    AxialHex center = new AxialHex(0, 0);
-                    int range = HexUtils.AxialDistance(center, gh.hex);
+                    Debug.Log(hex.GetHashCode());
+                    GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
+                    if (ghInRange != null)
+                        ghInRange.mesh.renderer.material = LineMaterial;
+                }
 
-                    float t1 = Time.realtimeSinceStartup;
-                    List<CubeHex> inRange = Range(center, range);
-                    Debug.Log(inRange.Count + "/" + hexes.Count);
-                    float t2 = Time.realtimeSinceStartup;
-                    float elapsed = t2 - t1;
-                    Debug.Log(elapsed);
+                AxialHex center = new AxialHex(0, 0);
+                int range = HexUtils.AxialDistance(center, gh.hex);
 
-                    //for (int i = 0; i < 6; ++i)
-                    //{
-
-                        //AxialHex neighbor = HexUtils.HexNeighbor(gh.hex, i);
-                        //GameHex gNeighbor = hexes[neighbor.GetHashCode()] as GameHex;
-
-                        //Debug.Log(gNeighbor);
-                    //}
+                inRange = Range(center, range);
+                Debug.Log(inRange.Count);
+                foreach (CubeHex hex in inRange)
+                {
+                    Debug.Log(hex.GetHashCode());
+                    GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
+                    if (ghInRange != null)
+                        ghInRange.mesh.renderer.material = mouseOver;
                 }
             }
+            //GameHex gh = hit.transform.GetComponent<GameHex>();
+            //if (gh != null)
+            //{
+            //    AxialHex center = new AxialHex(0, 0);
+            //    int range = HexUtils.AxialDistance(center, gh.hex);
+
+            //    float t1 = Time.realtimeSinceStartup;
+            //    List<CubeHex> inRange = Range(center, range);
+            //    Debug.Log(inRange.Count + "/" + hexes.Count);
+            //    float t2 = Time.realtimeSinceStartup;
+            //    float elapsed = t2 - t1;
+            //    Debug.Log(elapsed);
+            //}
         }
     }
 

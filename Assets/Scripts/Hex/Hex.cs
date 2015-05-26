@@ -47,6 +47,11 @@ public abstract class Hex
     public abstract int R(); //y
     public abstract int S(); //z
 
+    public override int GetHashCode()
+    {
+        return (R().ToString() + Q().ToString() + S().ToString()).GetHashCode();
+    }
+
     //public override int GetHashCode()
     //{
     //    return (R().ToString() + Q().ToString() + S().ToString()).GetHashCode();

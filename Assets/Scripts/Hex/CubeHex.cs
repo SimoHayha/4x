@@ -38,4 +38,9 @@ public class CubeHex : Hex
     {
         return s;
     }
+
+    public override int GetHashCode()
+    {
+        return base.GetHashCode();
+    }
 }
