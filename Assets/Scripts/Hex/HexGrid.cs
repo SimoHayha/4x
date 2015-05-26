@@ -37,12 +37,16 @@ public class HexGrid : MonoBehaviour
         public VectorLine line;
         public Collider2D collider;
         public int Hash;
+        public Box box;
+        public GameObject boxMesh;
 
         private TextMesh textMesh;
 
         void Start()
         {
             Hash = hex.GetHashCode();
+
+            SetupBox();
             //GameObject text = new GameObject("pos");
             //text.transform.parent = transform;
             //text.transform.localPosition = Vector3.zero;
@@ -62,6 +66,34 @@ public class HexGrid : MonoBehaviour
             //textMesh.text = axialCoord[0] + " " + axialCoord[1];
             //Vector3 cubeCoord = HexUtils.GetCubeCoord();
             //textMesh.text = cubeCoord[0] + " " + cubeCoord[1] + " " + cubeCoord[2];
+        }
+
+        public void SetupBox()
+        {
+            if (box == null)
+            {
+                box = new Box();
+                box.Type = Box.BoxType.Space;
+            }
+
+            if (boxMesh == null)
+            {
+                if (box.Type == Box.BoxType.BlackHole)
+                {
+                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/BlackHole");
+                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                }
+                else if (box.Type == Box.BoxType.Star)
+                {
+                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/Star");
+                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                }
+                else if (box.Type == Box.BoxType.Anomaly)
+                {
+                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/Anomaly");
+                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                }
+            }
         }
     }
 
@@ -87,7 +119,7 @@ public class HexGrid : MonoBehaviour
 
         Orientation orientation = Orientation.LayoutPointy();
         //Orientation orientation = Orientation.LayoutFlat();
-        layout = new Layout(orientation, new Vector3(0.5f, 0.5f, 0.0f), Origin);
+        layout = new Layout(orientation, new Vector3(1.0f, 1.0f, 0.0f), Origin);
         lines = new List<VectorLine>();
 
         CreateMesh();
@@ -130,6 +162,14 @@ public class HexGrid : MonoBehaviour
         //CreateSelectPolygon(layout);
 
         hexMeshModel.SetActive(false);
+
+        UniverseInfo info = new UniverseInfo();
+        info.AnomalyCount = 5;
+        info.BlackHoleCount = 2;
+        info.SystemCount = 8;
+        info.Size = MapRadius;
+        info.Grid = hexes;
+        UniverseGenerator.Generate(info);
 
         GridTransform.localEulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
     }
@@ -253,6 +293,18 @@ public class HexGrid : MonoBehaviour
             //    Debug.Log(elapsed);
             //}
         }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            UniverseInfo info = new UniverseInfo();
+            info.AnomalyCount = 4;
+            info.BlackHoleCount = 1;
+            info.SystemCount = 2;
+            info.Size = MapRadius;
+            info.Grid = hexes;
+            UniverseGenerator.Generate(info);
+        }
+
     }
 
     List<CubeHex> Range(AxialHex center, int N)

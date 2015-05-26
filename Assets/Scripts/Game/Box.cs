@@ -7,7 +7,10 @@ public class Box
     {
         Space,
         Planet,
-        AsteroidBelt
+        AsteroidBelt,
+        BlackHole,
+        Anomaly,
+        Star
     }
 
     public BoxType Type;
