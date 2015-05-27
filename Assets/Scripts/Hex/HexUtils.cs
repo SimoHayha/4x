@@ -9,7 +9,6 @@ public static class HexUtils
 
     public static CubeHex CubeAdd(CubeHex a, CubeHex b)
     {
-        Debug.Log(a + " " + b);
         return new CubeHex(a.Q() + b.Q(), a.R() + b.R(), a.S() + b.S());
     }
 
@@ -111,7 +110,8 @@ public static class HexUtils
         v.x = h.Q();
         v.z = h.R();
         v.y = -v.x - v.z;
-        return new CubeHex((int)v.y, (int)v.x, (int)v.z);
+        //return new CubeHex((int)v.y, (int)v.x, (int)v.z);
+        return new CubeHex((int)v.x, (int)v.y, (int)v.z);
     }
 
     public static int CubeDistance(CubeHex a, CubeHex b)

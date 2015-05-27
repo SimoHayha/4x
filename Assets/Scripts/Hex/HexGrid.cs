@@ -61,8 +61,8 @@ public class HexGrid : MonoBehaviour
             textMesh.text = hex.Q() + " " + hex.R();
 
             //Vector3 cubeCoord = HexUtils.AxialToCube(hex);
-            CubeHex cubeHex = HexUtils.AxialToCubeDirect(hex);
-            textMesh.text = cubeHex.Q() + " " + cubeHex.R() + " " + cubeHex.S();
+            //CubeHex cubeHex = HexUtils.AxialToCubeDirect(hex);
+            //textMesh.text = cubeHex.Q() + " " + cubeHex.R() + " " + cubeHex.S();
 
             //Vector2 axialCoord = HexUtils.CubeToHex();
             //textMesh.text = axialCoord[0] + " " + axialCoord[1];
@@ -122,8 +122,13 @@ public class HexGrid : MonoBehaviour
                 map.Add(new AxialHex(q, r, -q - r));
         }
 
-        VectorLine.SetCanvasCamera(CameraToUse);
+        //VectorLine.SetCanvasCamera(CameraToUse);
+        VectorLine.SetCamera3D(CameraToUse);
         VectorLine.canvas.planeDistance = 10;
+
+        VectorLine.canvas.renderMode = RenderMode.WorldSpace;
+        VectorLine.canvas.GetComponent<RectTransform>().position = Vector3.zero;
+        VectorLine.canvas.GetComponent<RectTransform>().localScale = new Vector3(0.02565f, 0.02565f, 0.0f);
 
         Orientation orientation = Orientation.LayoutPointy();
         //Orientation orientation = Orientation.LayoutFlat();
@@ -137,7 +142,7 @@ public class HexGrid : MonoBehaviour
             List<Vector3> points = HexUtils.PolygonCorner(layout, h);
             Vector3 center = FindCenter(points);
             points.Add(points[0]);
-            VectorLine line = new VectorLine("Line", points, LineMaterial, 1.0f, LineType.Continuous, Joins.Weld);
+            VectorLine line = new VectorLine("Line", points, LineMaterial, 2.0f, LineType.Continuous, Joins.Weld);
             line.drawTransform = GridTransform;
             line.drawDepth = 0;
             line.Draw();
@@ -280,8 +285,9 @@ public class HexGrid : MonoBehaviour
                 Debug.Log(inRange.Count);
                 foreach (CubeHex hex in inRange)
                 {
-                    Debug.Log(hex.GetHashCode());
-                    GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
+                    AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
+                    Debug.Log(axialHex.GetHashCode());
+                    GameHex ghInRange = hexes[axialHex.GetHashCode()] as GameHex;
                     if (ghInRange != null)
                         ghInRange.mesh.renderer.material = mouseOver;
                 }

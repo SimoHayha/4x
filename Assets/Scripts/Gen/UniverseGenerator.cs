@@ -18,7 +18,7 @@ public static class UniverseGenerator
 {
     static List<CubeHex> Range(CubeHex center, int N)
     {
-        Debug.Log(center.Q() + " " + center.R() + " " + center.S());
+        //Debug.Log(center.Q() + " " + center.R() + " " + center.S());
 
         List<CubeHex> results = new List<CubeHex>();
 
@@ -30,6 +30,12 @@ public static class UniverseGenerator
             for (dy = Mathf.Max(-N, -dx - N); dy <= Mathf.Min(N, -dx + N); ++dy)
             {
                 dz = -dx - dy;
+
+                CubeHex cube = new CubeHex(dx, dy, dz);
+                AxialHex a1 = HexUtils.CubeToAxialDirect(center);
+                AxialHex a2 = HexUtils.CubeToAxialDirect(cube);
+                //Debug.Log(a1 + " " + a2);
+
                 results.Add(HexUtils.CubeAdd(center, new CubeHex(dx, dy, dz)));
             }
         }
@@ -56,26 +62,27 @@ public static class UniverseGenerator
             gh.SetupBox();
 
             //Vector3 v = HexUtils.AxialToCube(gh.hex);
+            Selection.activeTransform = gh.transform;
             CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
-            List<CubeHex> inRange = Range(cubeHex, 1);
+            List<CubeHex> inRange = Range(cubeHex, 5);
             Debug.Log("Range " + inRange.Count);
             foreach (CubeHex hex in inRange)
             {
                 AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
-                Debug.Log(axialHex + " " + axialHex.GetHashCode());
-                HexGrid.GameHex gh2 = table[axialHex.GetHashCode()] as HexGrid.GameHex;
-                if (gh2 != null)
-                    gh2.mesh.renderer.material = null;
-                table.Remove(hex.GetHashCode());
+                //Debug.Log(axialHex + " " + axialHex.GetHashCode() + " " + hex + " " + hex.GetHashCode());
+                //HexGrid.GameHex gh2 = table[axialHex.GetHashCode()] as HexGrid.GameHex;
+                //if (gh2 != null)
+                //    gh2.mesh.renderer.material = null;
+                table.Remove(axialHex.GetHashCode());
             }
-            break;
+            //break;
 
 
             Debug.Log(table.Count);
 
-            i++;
-            if (i > 3)
-                break;
+            //i++;
+            //if (i > 3)
+            //    break;
         }
     }
 
