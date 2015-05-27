@@ -142,12 +142,12 @@ public class HexGrid : MonoBehaviour
             List<Vector3> points = HexUtils.PolygonCorner(layout, h);
             Vector3 center = FindCenter(points);
             points.Add(points[0]);
-            VectorLine line = new VectorLine("Line", points, LineMaterial, 2.0f, LineType.Continuous, Joins.Weld);
-            line.drawTransform = GridTransform;
-            line.drawDepth = 0;
-            line.Draw();
+            //VectorLine line = new VectorLine("Line", points, LineMaterial, 2.0f, LineType.Continuous, Joins.Weld);
+            //line.drawTransform = GridTransform;
+            //line.drawDepth = 0;
+            //line.Draw();
 
-            lines.Add(line);
+            //lines.Add(line);
 
             //GameObject gameObject = new GameObject("case");
 
@@ -156,7 +156,7 @@ public class HexGrid : MonoBehaviour
 
             GameHex gh = /*new GameHex(h, line);*/ hexMesh.AddComponent<GameHex>();
             gh.hex = h as AxialHex;
-            gh.line = line;
+            //gh.line = line;
             gh.mesh = hexMesh;
 
             hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
@@ -252,7 +252,7 @@ public class HexGrid : MonoBehaviour
             over.mesh.renderer.material = mouseOver;
 
         Vector3 mousePos = Input.mousePosition;
-        mousePos.z = 10.0f;
+        mousePos.z = /*10.0f*/ - Camera.main.transform.position.z;
         Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
         Vector2 camera = Camera.main.transform.position;
         RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);

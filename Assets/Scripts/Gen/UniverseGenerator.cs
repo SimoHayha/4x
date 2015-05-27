@@ -45,23 +45,17 @@ public static class UniverseGenerator
 
     static void GenerateStars(UniverseInfo info)
     {
-        int i = 0;
         Hashtable table = info.Grid.Clone() as Hashtable;
-        Debug.Log(table.Count);
         while (table.Count > 0)
         {
             int rand = Random.Range(0, table.Count);
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
 
-            //Debug.Log(gh.hex.Q() + " " + gh.hex.R());
-            //Selection.activeTransform = gh.transform;
-
             gh.box = new Box();
             gh.box.Type = Box.BoxType.Star;
             gh.SetupBox();
 
-            //Vector3 v = HexUtils.AxialToCube(gh.hex);
             Selection.activeTransform = gh.transform;
             CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
             List<CubeHex> inRange = Range(cubeHex, 5);
@@ -69,20 +63,8 @@ public static class UniverseGenerator
             foreach (CubeHex hex in inRange)
             {
                 AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
-                //Debug.Log(axialHex + " " + axialHex.GetHashCode() + " " + hex + " " + hex.GetHashCode());
-                //HexGrid.GameHex gh2 = table[axialHex.GetHashCode()] as HexGrid.GameHex;
-                //if (gh2 != null)
-                //    gh2.mesh.renderer.material = null;
                 table.Remove(axialHex.GetHashCode());
             }
-            //break;
-
-
-            Debug.Log(table.Count);
-
-            //i++;
-            //if (i > 3)
-            //    break;
         }
     }
 
