@@ -59,7 +59,6 @@ public static class UniverseGenerator
             Selection.activeTransform = gh.transform;
             CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
             List<CubeHex> inRange = Range(cubeHex, 5);
-            Debug.Log("Range " + inRange.Count);
             foreach (CubeHex hex in inRange)
             {
                 AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
@@ -78,6 +77,8 @@ public static class UniverseGenerator
         }
 
         GenerateStars(info);
+        GenerateBlackHoles(info);
+        GenerateAnomalies(info);
 
         //for (int i = 0; i < info.SystemCount; ++i)
         //{
@@ -121,5 +122,53 @@ public static class UniverseGenerator
         //    gameHex.box.Type = Box.BoxType.Anomaly;
         //    gameHex.SetupBox();
         //}
+    }
+
+    private static void GenerateAnomalies(UniverseInfo info)
+    {
+        Hashtable table = info.Grid.Clone() as Hashtable;
+        while (table.Count > 0)
+        {
+            int rand = Random.Range(0, table.Count);
+            HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
+            HexGrid.GameHex gh = arr[rand];
+
+            gh.box = new Box();
+            gh.box.Type = Box.BoxType.Anomaly;
+            gh.SetupBox();
+
+            Selection.activeTransform = gh.transform;
+            CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
+            List<CubeHex> inRange = Range(cubeHex, 3);
+            foreach (CubeHex hex in inRange)
+            {
+                AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
+                table.Remove(axialHex.GetHashCode());
+            }
+        }
+    }
+
+    private static void GenerateBlackHoles(UniverseInfo info)
+    {
+        Hashtable table = info.Grid.Clone() as Hashtable;
+        while (table.Count > 0)
+        {
+            int rand = Random.Range(0, table.Count);
+            HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
+            HexGrid.GameHex gh = arr[rand];
+
+            gh.box = new Box();
+            gh.box.Type = Box.BoxType.BlackHole;
+            gh.SetupBox();
+
+            Selection.activeTransform = gh.transform;
+            CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
+            List<CubeHex> inRange = Range(cubeHex, 8);
+            foreach (CubeHex hex in inRange)
+            {
+                AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
+                table.Remove(axialHex.GetHashCode());
+            }
+        }
     }
 }

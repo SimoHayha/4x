@@ -16,6 +16,7 @@ public class HexMesh : MonoBehaviour
 
         MeshFilter mf = gameObject.AddComponent<MeshFilter>();
         Mesh mesh = new Mesh();
+        mesh.name = "Hexagon";
         mf.mesh = mesh;
 
         Renderer rend = gameObject.AddComponent<MeshRenderer>();

@@ -3,20 +3,26 @@ using System.Collections;
 
 public class CameraController : MonoBehaviour
 {
-    public float Speed = 50.0f;
+    public float MoveSpeed = 10.0f;
+    public float ZoomSpeed = 50.0f;
 
     void Update()
     {
-        Vector3 offset = Vector3.zero;
+        Vector3 moveOffset = Vector3.zero;
+        Vector3 zoomOffset = Vector3.zero;
+
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+
+        moveOffset.x = MoveSpeed * horizontal;
+        moveOffset.y = MoveSpeed * vertical;
 
         if (Input.GetAxis("Mouse ScrollWheel") > 0.0f)
-        {
-            offset.z += Speed * Time.deltaTime;
-            //Camera.main.orthographicSize = Mathf.Min(Camera.main.orthographicSize - 1, 6);
-        }
+            zoomOffset.z += ZoomSpeed * Time.deltaTime;
         else if (Input.GetAxis("Mouse ScrollWheel") < 0.0f)
-            offset.z -= Speed * Time.deltaTime;
+            zoomOffset.z -= ZoomSpeed * Time.deltaTime;
 
-        transform.position += offset;
+        transform.Translate(moveOffset, Space.World);
+        transform.Translate(zoomOffset, Space.Self);
     }
 }

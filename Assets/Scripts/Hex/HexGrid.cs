@@ -55,7 +55,7 @@ public class HexGrid : MonoBehaviour
             textMesh = text.AddComponent<TextMesh>();
             Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
             textMesh.font = arial;
-            textMesh.renderer.material = arial.material;
+            textMesh.GetComponent<Renderer>().material = arial.material;
             textMesh.anchor = TextAnchor.MiddleCenter;
             textMesh.characterSize = 0.25f;
             textMesh.text = hex.Q() + " " + hex.R();
@@ -162,7 +162,7 @@ public class HexGrid : MonoBehaviour
             hexMesh.transform.eulerAngles = new Vector3(0.0f, 180.0f, 180.0f);
             hexMesh.transform.position = center;
             hexMesh.transform.parent = GridTransform;
-            hexMesh.renderer.material = HexMaterial;
+            hexMesh.GetComponent<Renderer>().material = HexMaterial;
             hexMesh.name = "hexagon(" + gh.hex.Q() + "," + gh.hex.R() + ")";
 
             CreateCollider(layout, gh, hexMesh);
@@ -249,23 +249,25 @@ public class HexGrid : MonoBehaviour
     void Update()
     {
         if (over != null)
-            over.mesh.renderer.material = mouseOver;
+            over.mesh.GetComponent<Renderer>().material = mouseOver;
 
-        Vector3 mousePos = Input.mousePosition;
-        mousePos.z = /*10.0f*/ - Camera.main.transform.position.z;
-        Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
-        Vector2 camera = Camera.main.transform.position;
-        RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
-        Debug.DrawLine(point, Vector2.zero - camera);
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+        //Vector3 mousePos = Input.mousePosition;
+        //mousePos.z = /*10.0f*/ - Camera.main.transform.position.z;
+        //Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
+        //Vector2 camera = Camera.main.transform.position;
+        //RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
+        //Debug.DrawLine(point, Vector2.zero - camera);
         if (hit.collider != null)
         {
             GameHex gh = hit.transform.GetComponent<GameHex>();
             if (gh != null)
             {
                 if (over != null)
-                    over.mesh.renderer.material = HexMaterial;
+                    over.mesh.GetComponent<Renderer>().material = HexMaterial;
                 over = gh;
-                over.mesh.renderer.material = mouseOver;
+                over.mesh.GetComponent<Renderer>().material = mouseOver;
             }
 
             if (Input.GetMouseButtonDown(0))
@@ -275,7 +277,7 @@ public class HexGrid : MonoBehaviour
                     Debug.Log(hex.GetHashCode());
                     GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
                     if (ghInRange != null)
-                        ghInRange.mesh.renderer.material = HexMaterial;
+                        ghInRange.mesh.GetComponent<Renderer>().material = HexMaterial;
                 }
 
                 AxialHex center = new AxialHex(0, 0);
@@ -286,25 +288,11 @@ public class HexGrid : MonoBehaviour
                 foreach (CubeHex hex in inRange)
                 {
                     AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
-                    Debug.Log(axialHex.GetHashCode());
                     GameHex ghInRange = hexes[axialHex.GetHashCode()] as GameHex;
                     if (ghInRange != null)
-                        ghInRange.mesh.renderer.material = mouseOver;
+                        ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
                 }
             }
-            //GameHex gh = hit.transform.GetComponent<GameHex>();
-            //if (gh != null)
-            //{
-            //    AxialHex center = new AxialHex(0, 0);
-            //    int range = HexUtils.AxialDistance(center, gh.hex);
-
-            //    float t1 = Time.realtimeSinceStartup;
-            //    List<CubeHex> inRange = Range(center, range);
-            //    Debug.Log(inRange.Count + "/" + hexes.Count);
-            //    float t2 = Time.realtimeSinceStartup;
-            //    float elapsed = t2 - t1;
-            //    Debug.Log(elapsed);
-            //}
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
