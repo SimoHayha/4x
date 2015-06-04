@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[System.Serializable]
 public class Box
 {
     public enum BoxType
@@ -14,4 +15,6 @@ public class Box
     }
 
     public BoxType Type;
+
+    public DataHandler Handler;
 }

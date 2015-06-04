@@ -52,8 +52,16 @@ public static class UniverseGenerator
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
 
-            gh.box = new Box();
+            if (gh.box.Type != Box.BoxType.Space)
+                continue;
             gh.box.Type = Box.BoxType.Star;
+
+            StarHandler handler = new StarHandler();
+            handler.Type = StarHandler.StarType.YellowDwarf;
+            handler.Texture = TextureLoader.StarTextures[Random.Range(0, TextureLoader.StarTextures.Length)];
+            handler.CoronaTexture = TextureLoader.CoronaTextures[Random.Range(0, TextureLoader.CoronaTextures.Length)];
+            gh.box.Handler = handler;
+            gh.box.Handler.SetGUIHandler(new GUIStarHandler());
             gh.SetupBox();
 
             Selection.activeTransform = gh.transform;
@@ -73,6 +81,9 @@ public static class UniverseGenerator
         {
             HexGrid.GameHex gameHex = e.Value as HexGrid.GameHex;
             gameHex.box = new Box();
+            gameHex.box.Type = Box.BoxType.Space;
+            gameHex.box.Handler = new GridHandler();
+            gameHex.box.Handler.SetGUIHandler(new GUIGridHandler());
             GameObject.Destroy(gameHex.boxMesh);
         }
 
@@ -133,7 +144,8 @@ public static class UniverseGenerator
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
 
-            gh.box = new Box();
+            if (gh.box.Type != Box.BoxType.Space)
+                continue;
             gh.box.Type = Box.BoxType.Anomaly;
             gh.SetupBox();
 
@@ -157,7 +169,8 @@ public static class UniverseGenerator
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
 
-            gh.box = new Box();
+            if (gh.box.Type != Box.BoxType.Space)
+                continue;
             gh.box.Type = Box.BoxType.BlackHole;
             gh.SetupBox();
 

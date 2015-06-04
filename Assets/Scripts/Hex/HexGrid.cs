@@ -72,12 +72,6 @@ public class HexGrid : MonoBehaviour
 
         public void SetupBox()
         {
-            if (box == null)
-            {
-                box = new Box();
-                box.Type = Box.BoxType.Space;
-            }
-
             if (boxMesh == null)
             {
                 if (box.Type == Box.BoxType.BlackHole)
@@ -87,8 +81,9 @@ public class HexGrid : MonoBehaviour
                 }
                 else if (box.Type == Box.BoxType.Star)
                 {
-                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/Star");
-                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                    boxMesh = Instantiate<GameObject>(box.Handler.GetGridModel());
+                    //GameObject blackHoleModel = Resources.Load<GameObject>("Box/Star");
+                    //boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
                 }
                 else if (box.Type == Box.BoxType.Anomaly)
                 {
@@ -251,46 +246,49 @@ public class HexGrid : MonoBehaviour
         if (over != null)
             over.mesh.GetComponent<Renderer>().material = mouseOver;
 
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
-        //Vector3 mousePos = Input.mousePosition;
-        //mousePos.z = /*10.0f*/ - Camera.main.transform.position.z;
-        //Vector2 point = Camera.main.ScreenToWorldPoint(mousePos);
-        //Vector2 camera = Camera.main.transform.position;
-        //RaycastHit2D hit = Physics2D.Raycast(point, Vector2.zero);
-        //Debug.DrawLine(point, Vector2.zero - camera);
-        if (hit.collider != null)
+        if (over != null)
+            over.mesh.GetComponent<Renderer>().material = HexMaterial;
+        if (!UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
         {
-            GameHex gh = hit.transform.GetComponent<GameHex>();
-            if (gh != null)
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.GetRayIntersection(ray);
+            if (hit.collider != null)
             {
-                if (over != null)
-                    over.mesh.GetComponent<Renderer>().material = HexMaterial;
-                over = gh;
-                over.mesh.GetComponent<Renderer>().material = mouseOver;
-            }
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                foreach (CubeHex hex in inRange)
+                GameHex gh = hit.transform.GetComponent<GameHex>();
+                if (gh != null)
                 {
-                    Debug.Log(hex.GetHashCode());
-                    GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
-                    if (ghInRange != null)
-                        ghInRange.mesh.GetComponent<Renderer>().material = HexMaterial;
+                    over = gh;
+                    over.mesh.GetComponent<Renderer>().material = mouseOver;
                 }
 
-                AxialHex center = new AxialHex(0, 0);
-                int range = HexUtils.AxialDistance(center, gh.hex);
-
-                inRange = Range(HexUtils.AxialToCubeDirect(gh.hex), 2);
-                Debug.Log(inRange.Count);
-                foreach (CubeHex hex in inRange)
+                if (Input.GetMouseButtonDown(0))
                 {
-                    AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
-                    GameHex ghInRange = hexes[axialHex.GetHashCode()] as GameHex;
-                    if (ghInRange != null)
-                        ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
+                    Debug.Log(gh);
+                    Debug.Log(gh.box);
+                    Debug.Log(gh.box.Handler);
+                    Debug.Log(gh.box.Handler.GUI);
+                    gh.box.Handler.GUI.OnGUIStarted();
+
+                    //foreach (CubeHex hex in inRange)
+                    //{
+                    //    Debug.Log(hex.GetHashCode());
+                    //    GameHex ghInRange = hexes[hex.GetHashCode()] as GameHex;
+                    //    if (ghInRange != null)
+                    //        ghInRange.mesh.GetComponent<Renderer>().material = HexMaterial;
+                    //}
+
+                    //AxialHex center = new AxialHex(0, 0);
+                    //int range = HexUtils.AxialDistance(center, gh.hex);
+
+                    //inRange = Range(HexUtils.AxialToCubeDirect(gh.hex), 2);
+                    //Debug.Log(inRange.Count);
+                    //foreach (CubeHex hex in inRange)
+                    //{
+                    //    AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
+                    //    GameHex ghInRange = hexes[axialHex.GetHashCode()] as GameHex;
+                    //    if (ghInRange != null)
+                    //        ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
+                    //}
                 }
             }
         }
