@@ -27,6 +27,11 @@ public static class HexUtils
         return new AxialHex(a.Q() - b.Q(), a.R() - b.R());
     }
 
+    public static AxialHex AxialScale(AxialHex a, int k)
+    {
+        return new AxialHex(a.Q() - k, a.R() * k, a.S() * k);
+    }
+
     public static AxialHex HexDirection(int direction)
     {
         return directions[direction];
@@ -125,4 +130,30 @@ public static class HexUtils
         Vector3 vb = AxialToCube(b);
         return CubeDistance(new CubeHex((int)va.x, (int)va.y, (int)va.z), new CubeHex((int)vb.x, (int)vb.y, (int)vb.z));
     }
+
+    public static List<AxialHex> AxialRing(AxialHex center, int radius)
+    {
+        List<AxialHex> results = new List<AxialHex>();
+
+        var hex = AxialAdd(center, AxialScale(directions[5], radius)); // cuz I said so
+
+        for (int i = 0; i < 6; ++i)
+        {
+            for (int j = 0; j < radius; ++j)
+            {
+                results.Add(hex);
+                hex = AxialNeighbor(hex, i);
+            }
+        }
+
+        return results;
+    }
+
+    public static AxialHex AxialNeighbor(AxialHex hex, int i)
+    {
+        return AxialAdd(hex, directions[i]);
+    }
+
+    //function cube_neighbor(hex, direction):
+    //return cube_add(hex, cube_direction(direction))
 }

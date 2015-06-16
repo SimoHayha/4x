@@ -12,6 +12,8 @@ public class UniverseInfo
     public int SystemCount;
     public int AnomalyCount;
     public int BlackHoleCount;
+
+    public List<HexGrid.GameHex> Stars = new List<HexGrid.GameHex>();
 }
 
 public static class UniverseGenerator
@@ -46,11 +48,16 @@ public static class UniverseGenerator
     static void GenerateStars(UniverseInfo info)
     {
         Hashtable table = info.Grid.Clone() as Hashtable;
+        int i = 0;
         while (table.Count > 0)
         {
             int rand = Random.Range(0, table.Count);
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
+            i++;
+
+            if (i > 50)
+                break;
 
             if (gh.box.Type != Box.BoxType.Space)
                 continue;
@@ -64,9 +71,11 @@ public static class UniverseGenerator
             gh.box.Handler.SetGUIHandler(new GUIStarHandler());
             gh.SetupBox();
 
+            info.Stars.Add(gh);
+
             Selection.activeTransform = gh.transform;
             CubeHex cubeHex = HexUtils.AxialToCubeDirect(gh.hex);
-            List<CubeHex> inRange = Range(cubeHex, 5);
+            List<CubeHex> inRange = Range(cubeHex, 8);
             foreach (CubeHex hex in inRange)
             {
                 AxialHex axialHex = HexUtils.CubeToAxialDirect(hex);
@@ -87,9 +96,13 @@ public static class UniverseGenerator
             GameObject.Destroy(gameHex.boxMesh);
         }
 
+        // 1st pass
         GenerateStars(info);
         GenerateBlackHoles(info);
         GenerateAnomalies(info);
+
+        // 2nd pass
+        GeneratePlanets(info);
 
         //for (int i = 0; i < info.SystemCount; ++i)
         //{
@@ -135,14 +148,54 @@ public static class UniverseGenerator
         //}
     }
 
+    private static void GeneratePlanets(UniverseInfo info)
+    {
+        foreach (HexGrid.GameHex gh in info.Stars)
+        {
+            int[] arr = new int[] { 1, 2, 3 };
+            int nbPlanet = Random.Range(0, arr.Length);
+            StarHandler starHandler = gh.box.Handler as StarHandler;
+
+            for (int i = 0; i < nbPlanet; ++i)
+            {
+                int range = Random.Range(0, arr.Length);
+                List<AxialHex> ring = HexUtils.AxialRing(gh.hex, arr[range]);
+                List<HexGrid.GameHex> ghsInRing = new List<HexGrid.GameHex>();
+                foreach (var hex in ring)
+                {
+                    HexGrid.GameHex ghInRing = info.Grid[hex.GetHashCode()] as HexGrid.GameHex;
+                    if (ghInRing != null && ghInRing.box.Type == Box.BoxType.Space)
+                        ghsInRing.Add(ghInRing);
+                }
+
+                Debug.Log(ghsInRing.Count);
+                HexGrid.GameHex spot = ghsInRing[Random.Range(0, ghsInRing.Count)];
+
+                PlanetHandler handler = new PlanetHandler();
+                handler.System = starHandler.System;
+                spot.box.Handler = handler;
+                spot.box.Handler.SetGUIHandler(new GUIPlanetHandler());
+                spot.box.Type = Box.BoxType.Planet;
+                spot.SetupBox();
+
+                starHandler.System.Planets.Add(handler);
+            }
+        }
+    }
+
     private static void GenerateAnomalies(UniverseInfo info)
     {
         Hashtable table = info.Grid.Clone() as Hashtable;
+        int i = 0;
         while (table.Count > 0)
         {
             int rand = Random.Range(0, table.Count);
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
+            i++;
+
+            if (i > 50)
+                break;
 
             if (gh.box.Type != Box.BoxType.Space)
                 continue;
@@ -163,11 +216,16 @@ public static class UniverseGenerator
     private static void GenerateBlackHoles(UniverseInfo info)
     {
         Hashtable table = info.Grid.Clone() as Hashtable;
+        int i = 0;
         while (table.Count > 0)
         {
             int rand = Random.Range(0, table.Count);
             HexGrid.GameHex[] arr = table.Values.Cast<HexGrid.GameHex>().ToArray();
             HexGrid.GameHex gh = arr[rand];
+            i++;
+
+            if (i > 50)
+                break;
 
             if (gh.box.Type != Box.BoxType.Space)
                 continue;

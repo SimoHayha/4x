@@ -76,19 +76,17 @@ public class HexGrid : MonoBehaviour
             {
                 if (box.Type == Box.BoxType.BlackHole)
                 {
-                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/BlackHole");
-                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
                 }
                 else if (box.Type == Box.BoxType.Star)
                 {
-                    boxMesh = Instantiate<GameObject>(box.Handler.GetGridModel());
-                    //GameObject blackHoleModel = Resources.Load<GameObject>("Box/Star");
-                    //boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                    boxMesh = box.Handler.GetGridModel();
                 }
                 else if (box.Type == Box.BoxType.Anomaly)
                 {
-                    GameObject blackHoleModel = Resources.Load<GameObject>("Box/Anomaly");
-                    boxMesh = Instantiate(blackHoleModel, transform.position, Quaternion.identity) as GameObject;
+                }
+                else if (box.Type == Box.BoxType.Planet)
+                {
+                    boxMesh = box.Handler.GetGridModel();
                 }
             }
 
@@ -268,6 +266,14 @@ public class HexGrid : MonoBehaviour
                     Debug.Log(gh.box.Handler);
                     Debug.Log(gh.box.Handler.GUI);
                     gh.box.Handler.GUI.OnGUIStarted();
+
+                    var ring = HexUtils.AxialRing(gh.hex, 2);
+                    foreach (var h in ring)
+                    {
+                        GameHex ghInRange = hexes[h.GetHashCode()] as GameHex;
+                        if (ghInRange != null)
+                            ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
+                    }
 
                     //foreach (CubeHex hex in inRange)
                     //{
