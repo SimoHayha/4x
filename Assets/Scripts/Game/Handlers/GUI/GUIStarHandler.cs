@@ -7,15 +7,16 @@ public class GUIStarHandler : GUIHandler
     public override void OnGUIStarted()
     {
         PreviewHandler.Instance.SetPreview(GameObject.Instantiate<GameObject>(data.GetPreview()));
+
+        context.Star.gameObject.SetActive(true);
     }
 
     public override void OnGUIUpdated()
     {
-        throw new System.NotImplementedException();
     }
 
     public override void OnGUIEnded()
     {
-        throw new System.NotImplementedException();
+        context.Star.gameObject.SetActive(false);
     }
 }

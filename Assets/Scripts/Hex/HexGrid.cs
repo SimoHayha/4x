@@ -28,6 +28,7 @@ public class HexGrid : MonoBehaviour
 
     Material mouseOver;
     GameHex over;
+    GameHex selected;
 
     List<CubeHex> inRange;
 
@@ -241,8 +242,8 @@ public class HexGrid : MonoBehaviour
 
     void Update()
     {
-        if (over != null)
-            over.mesh.GetComponent<Renderer>().material = mouseOver;
+        //if (over != null)
+        //    over.mesh.GetComponent<Renderer>().material = mouseOver;
 
         if (over != null)
             over.mesh.GetComponent<Renderer>().material = HexMaterial;
@@ -261,19 +262,22 @@ public class HexGrid : MonoBehaviour
 
                 if (Input.GetMouseButtonDown(0))
                 {
-                    Debug.Log(gh);
-                    Debug.Log(gh.box);
-                    Debug.Log(gh.box.Handler);
-                    Debug.Log(gh.box.Handler.GUI);
+                    //Debug.Log(gh);
+                    //Debug.Log(gh.box);
+                    //Debug.Log(gh.box.Handler);
+                    //Debug.Log(gh.box.Handler.GUI);
+                    if (selected != null)
+                        selected.box.Handler.GUI.OnGUIEnded();
+                    selected = gh;
                     gh.box.Handler.GUI.OnGUIStarted();
 
-                    var ring = HexUtils.AxialRing(gh.hex, 2);
-                    foreach (var h in ring)
-                    {
-                        GameHex ghInRange = hexes[h.GetHashCode()] as GameHex;
-                        if (ghInRange != null)
-                            ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
-                    }
+                    //var ring = HexUtils.AxialRing(gh.hex, 2);
+                    //foreach (var h in ring)
+                    //{
+                    //    GameHex ghInRange = hexes[h.GetHashCode()] as GameHex;
+                    //    if (ghInRange != null)
+                    //        ghInRange.mesh.GetComponent<Renderer>().material = mouseOver;
+                    //}
 
                     //foreach (CubeHex hex in inRange)
                     //{
